@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$X5_VERSION" ]; then
-        echo >&2 '请设置$X5_VERSION 环境变量，改变量标识使用的BeX5版本，例如3.5 '
+        echo >&2 '请设置$X5_VERSION 环境变量，该变量标识使用的BeX5版本，例如3.5 '
         exit 1
 fi
 
@@ -20,18 +20,21 @@ BEX5_URL=$PRODUCT_URL/bex5/$X5_VERSION
 WEBAPPS_DIR=/usr/local/tomcat/webapps
 JUSTEP_HOME=/usr/local/x5
 
+# 暂停5秒，等待网络准备完成
+sleep 5
+
 # conf, license
 cd $JUSTEP_HOME
 rm -rf *
 
 echo "正在更新 conf..."
 curl $BEX5_URL/conf.tar.gz -o conf.tar.gz
-tar -xvf conf.tar.gz
-echo "conf.war 更新完毕"
+tar -xf conf.tar.gz
+echo "conf 更新完毕"
 
 echo "正在更新 license..."
 curl $BEX5_URL/license.tar.gz -o license.tar.gz
-tar -xvf license.tar.gz
+tar -xf license.tar.gz
 echo "license 更新完毕"
 
 # webapps
@@ -78,17 +81,18 @@ curl $DIST_URL/sql.tar.gz -f -o $JUSTEP_HOME/sql.tar.gz
 echo "sql.tar.gz 下载完毕"
 
 echo "正在更新 model..."
-tar -xvf model.tar.gz -C ./
+tar -xf model.tar.gz -C ./
 echo "model 更新完毕"
 echo ""
 
 echo "正在更新 doc..."
-tar -xvf doc.tar.gz -C ./
+tar -xf doc.tar.gz -C ./
 echo "doc 更新完毕"
 echo ""
 
 echo "正在更新 sql..."
-tar -xvf sql.tar.gz -C ./ 
+mkdir sql
+tar -xf sql.tar.gz -C ./ 
 echo "sql 更新完毕"
 echo ""
 
@@ -96,16 +100,18 @@ echo ""
 SQL_PATH="$JUSTEP_HOME/sql"
 LOG_PATH="$SQL_PATH/sqlload_`date +%Y%m%d%H%M%S`.log"
 load_script(){
-  TMP="tmp_script.sql"
+  TMP="tmp_script"
   echo "" >$TMP
   echo "DROP DATABASE IF EXISTS x5;" >>$TMP
-  echo "CREATE DATABASE x5 /*!40100 DEFAULT CHARACTER SET utf8 */;" >>$TMP
+  echo "CREATE DATABASE x5;" >>$TMP
   echo "USE x5;" >>$TMP
-  for FILE_NAME in `ls -A $1`;do
-    if [ -s "$1/$FILE_NAME" ];then
-      echo "source $1/$FILE_NAME;" >>$TMP
-    fi
+  echo "SET FOREIGN_KEY_CHECKS=0;" >>$TMP
+  echo "SET SQL_MODE='NO_AUTO_VALUE_ON_ZERO';" >>$TMP
+  for FILE_NAME in `ls -A $1/*.sql`;do
+    echo "source $FILE_NAME;" >>$TMP
   done
+  echo "SET FOREIGN_KEY_CHECKS=1;" >>$TMP
+  echo "SET SQL_MODE='STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION';" >>$TMP
   echo "commit;" >>$TMP
   echo "quit" >>$TMP
   echo "" >>$TMP
@@ -113,7 +119,7 @@ load_script(){
   cat $TMP
 
   START_TIME=$(date "+%s")
-  ./mysql -hdatabase -uroot -px5 -ve "source $TMP" >$LOG_PATH 2>&1
+  ./mysql --default-character-set=utf8 -hdatabase -uroot -px5 -ve "source $TMP" >$LOG_PATH 2>&1
   if [ $? -eq 0 ];then
     echo "[$?]脚本导入成功！共计用时: " `expr $(date "+%s") - ${START_TIME}` " 秒"
   else
