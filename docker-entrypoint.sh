@@ -39,11 +39,16 @@ echo "license 更新完毕"
 
 # webapps
 cd $WEBAPPS_DIR
+rm -rf ROOT*
 rm -rf x5*
 rm -rf BusinessServer*
 rm -rf ReportServer*
 rm -rf DocServer*
 rm -rf baas*
+
+echo "正在更新 ROOT.war..."
+curl $BEX5_URL/ROOT.war -o $WEBAPPS_DIR/ROOT.war
+echo "ROOT.war 更新完毕"
 
 echo "正在更新 x5.war..."
 curl $BEX5_URL/x5.war -o $WEBAPPS_DIR/x5.war
@@ -86,7 +91,8 @@ echo "model 更新完毕"
 echo ""
 
 echo "正在更新 doc..."
-tar -xf doc.tar.gz -C ./
+mkdir data
+tar -xf doc.tar.gz -C ./data
 echo "doc 更新完毕"
 echo ""
 
