@@ -30,7 +30,7 @@ download_tar(){
   echo "正在更新 $2..."
   curl -s -f $1/$2.tar.gz -o $2.tar.gz
   ERROR=$?
-  if [ "$ERROR" -eq "0" ];then
+  if [ "$ERROR" -eq "0" ]; then
     tar -xf $2.tar.gz -C ./
     echo "$2 更新完毕"
   else
@@ -75,7 +75,7 @@ else
     START_TIME=$(date "+%s")
     ./mysql --default-character-set=utf8 -hdatabase -uroot -px5 -ve "source $TMP" >$LOG_PATH 2>&1
     ERROR=$?
-    if [ "$ERROR" -eq "0" ];then
+    if [ "$ERROR" -eq "0" ]; then
       echo "数据库初始化成功！共计用时: " `expr $(date "+%s") - ${START_TIME}` " 秒"
     else
       echo "[$ERROR]数据库初始化失败"
@@ -84,7 +84,7 @@ else
   }
 
   file_list=`ls -A $SQL_PATH`
-  if [ "$file_list" ];then
+  if [ "$file_list" ]; then
     cd $SQL_PATH
     echo "获取mysql客户端..."
     curl -s -f $PRODUCT_URL/mysql/5.6/mysql -o mysql
@@ -99,13 +99,13 @@ fi
 download_webapps(){
   rm -rf $WEBAPPS_DIR/webapps.txt
   curl -s -f $1/webapps.txt -o $WEBAPPS_DIR/webapps.txt
-  if [ "$?" -eq "0" ];then
+  if [ "$?" -eq "0" ]; then
     while read webapp
     do
       echo "  正在更新 $webapp..."
       curl -s -f $1/$webapp -o $WEBAPPS_DIR/$webapp
       ERROR=$?
-      if [ "$ERROR" -eq "0" ];then
+      if [ "$ERROR" -eq "0" ]; then
         echo "  $webapp 更新完毕"
       else
         echo "  [$ERROR]更新 $webapp 失败"
@@ -120,6 +120,14 @@ cd $WEBAPPS_DIR
 echo "正在更新BeX5运行时..."
 download_webapps $BEX5_URL/webapps
 echo "更新BeX5运行时完毕"
+
+if [ -n "$INDEX_URL" ]; then
+  echo "设置入口地址INDEX_URL为：$INDEX_URL"
+  INDEX_FILE="$WEBAPPS_DIR/ROOT/index.html"
+  mkdir -p $WEBAPPS_DIR/ROOT
+  echo "<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">" > $INDEX_FILE
+  echo "<html><head><script type="text/javascript">window.location=\"$INDEX_URL\";</script></head></html>" >> $INDEX_FILE
+fi
 
 echo "正在更新自定义webapps..."
 download_webapps $DIST_URL/webapps
