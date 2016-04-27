@@ -1,13 +1,13 @@
 #!/bin/bash
 
 if [ -z "$X5_VERSION" ]; then
-        echo >&2 '请设置$X5_VERSION 环境变量，该变量标识使用的BeX5版本，例如3.5 '
-        exit 1
+  echo >&2 '请设置$X5_VERSION 环境变量，该变量标识使用的BeX5版本，例如3.5 '
+  exit 1
 fi
 
 if [ -z "$DIST_URL" ]; then
-        echo >&2 '请设置$DIST_URL环境变量 '
-        exit 1
+  echo >&2 '请设置$DIST_URL环境变量 '
+  exit 1
 fi
 
 PRODUCT_URL=http://jenkins.console:8080/dist/product
@@ -27,14 +27,14 @@ rm -rf *
 download_tar(){
   # $1: url $2: filename
   rm -rf $2.tar.gz
-  echo "正在更新 $2..."
+  echo "  正在更新 $2..."
   curl -s -f $1/$2.tar.gz -o $2.tar.gz
   ERROR=$?
   if [ "$ERROR" -eq "0" ]; then
     tar -xf $2.tar.gz -C ./
-    echo "$2 更新完毕"
+    echo "  $2 更新完毕"
   else
-    echo "[$ERROR]更新 $2 失败"
+    echo "  [$ERROR]更新 $2 失败"
     exit 1
   fi
 }
@@ -42,13 +42,18 @@ download_tar(){
 cd $JUSTEP_HOME
 rm -rf *
 
+echo "当前使用的BeX5版本：$X5_VERSION"
+echo "正在更新BeX5基础配置文件..."
 download_tar $BEX5_URL/home conf
 download_tar $BEX5_URL/home license
+echo "更新BeX5基础配置文件完毕"
 
+echo "正在更新资源..."
 download_tar $DIST_URL/home model
 download_tar $DIST_URL/home sql
 mkdir -p data && cd data
 download_tar $DIST_URL/home doc 
+echo "更新资源完毕"
 
 # init database
 if [ "$INIT_DB"x = "false"x ]; then
