@@ -14,7 +14,7 @@ if [ -z "$DIST_URL" ]; then
   error '请设置$DIST_URL环境变量 ' 1
 fi
 
-[ -z "$PRODUCT_URL" ] && PRODUCT_URL=http://jenkins.console:8080/dist/product
+[ -z "$PRODUCT_URL" ] && PRODUCT_URL=http://jenkins.system:8080/dist/product
 WEX5_URL=$PRODUCT_URL/bex5/$X5_VERSION
 UPDATE_HOME_SH=home.sh
 UPDATE_WEBAPPS_SH=webapps.sh
