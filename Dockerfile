@@ -1,11 +1,3 @@
-FROM buildpack-deps:jessie-curl
+FROM hub.cloudx5.com/justep/wex5-deployer:2
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-		zip \
-		unzip \
-	&& rm -rf /var/lib/apt/lists/*
-
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
-ENTRYPOINT ["docker-entrypoint.sh"]
-
+COPY env.sh /usr/local/bin/
